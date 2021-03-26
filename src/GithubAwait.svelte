@@ -1,22 +1,16 @@
 <script>
-  // modules
-  import { onMount } from "svelte";
-  // variables
-  let users = [];
-  let loading = true;
-  // lifecycles
-  onMount(async () => {
+  async function getUsers() {
     let userData = await fetch("https://api.github.com/users");
-    let githubUsers = await userData.json();
-    users = githubUsers;
-    loading = false;
-  });
+    let users = await userData.json();
+    return users;
+  }
 </script>
 
-{#if loading}
-  <h2>Loading...</h2>
-{:else}
-  <section>
+<section>
+  {#await getUsers()}
+    <!-- promise is pending -->
+    <h1>Loading...</h1>
+  {:then users}
     {#each users as user}
       <article class="user">
         <img src={user.avatar_url} alt={user.login} />
@@ -26,5 +20,8 @@
         </div>
       </article>
     {/each}
-  </section>
-{/if}
+  {:catch error}
+    <!-- promise was rejected -->
+    <p>Something went wrong! : {error.message}</p>
+  {/await}
+</section>
